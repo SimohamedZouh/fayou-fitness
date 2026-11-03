@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/* Mode sombre par classe (.dark), piloté par next-themes */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Charte FAYOU : violet + blanc/neutres uniquement */
+:root {
+  --bg: #ffffff;
+  --bg-alt: #f5f0ff;
+  --card: #ffffff;
+  --text: #0d0d12;
+  --text-muted: #5b5870;
+  --primary: #7f00fb;
+  --primary-text: #7f00fb;
+  --border: #e4dbf5;
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #0b0914;
+  --bg-alt: #13101f;
+  --card: #1a1629;
+  --text: #ffffff;
+  --text-muted: #b9b4cc;
+  --primary: #7f00fb;
+  --primary-text: #a35cff;
+  --border: #2c2745;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-alt: var(--bg-alt);
+  --color-card: var(--card);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-primary: var(--primary);
+  --color-primary-text: var(--primary-text);
+  --color-border: var(--border);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  background-color: var(--bg);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary-text);
+  outline-offset: 2px;
+}

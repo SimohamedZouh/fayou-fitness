@@ -4,7 +4,7 @@
 |---|---|---|---|---|
 | 1 | Projet, thème, polices, logo | validée (essai 1) | PASS | 2026-11-03 |
 | 2 | Données (catalogue, services, projets, site) | validée (essai 2) | PASS (essai 1 FAIL : regex téléphone) | 2026-11-03 |
-| 3 | Layout, header, footer, WhatsApp, thème | à faire | | |
+| 3 | Layout, header, footer, WhatsApp, thème | en cours (essai 1) | | 2026-11-03 |
 | 4 | Pages (accueil, catalogue, catégories, fiches, services, projets, à propos, contact) | à faire | | |
 | 5 | Panier de devis, formulaire, /api/lead | à faire | | |
 | 6 | Animations, SEO, accessibilité, tests | à faire | | |

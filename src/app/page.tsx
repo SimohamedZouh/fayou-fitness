@@ -3,7 +3,7 @@ import Logo from "@/components/Logo";
 // Page temporaire (étape 1) : sert à vérifier thème, polices et logo.
 export default function Home() {
   return (
-    <main className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-16 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center gap-8 px-4 py-16 text-center">
       <div className="w-full max-w-md">
         <Logo priority />
       </div>
@@ -13,6 +13,6 @@ export default function Home() {
       <p className="max-w-prose text-text-muted">
         Matériel de sport neuf et d&apos;occasion, depuis 2006.
       </p>
-    </main>
+    </div>
   );
 }

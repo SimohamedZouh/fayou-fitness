@@ -17,9 +17,7 @@ import Logo from "@/components/Logo";
 import ThemeToggle from "@/components/ThemeToggle";
 import ScrollProgress from "@/components/ScrollProgress";
 import { devisHref, navLinks } from "@/data/navigation";
-
-// Le panier de devis (zustand) arrive à l'étape 5 : placeholder à 0 en attendant.
-const QUOTE_COUNT = 0;
+import { useQuoteStore } from "@/lib/quote-store";
 
 const list: Variants = {
   hidden: {},
@@ -41,6 +39,11 @@ export default function Header() {
   const toggleRef = useRef<HTMLButtonElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll();
+  const hydrated = useQuoteStore((st) => st.hydrated);
+  const rawCount = useQuoteStore((st) => st.items.reduce((t, i) => t + i.quantite, 0));
+  const openDrawer = useQuoteStore((st) => st.openDrawer);
+  // 0 tant que le localStorage n'est pas relu : même rendu serveur / client.
+  const quoteCount = hydrated ? rawCount : 0;
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
 
@@ -142,19 +145,25 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <Link
-              href={devisHref}
-              aria-label={`Ma demande de devis : ${QUOTE_COUNT} machine${QUOTE_COUNT > 1 ? "s" : ""}`}
+            <button
+              type="button"
+              onClick={openDrawer}
+              aria-haspopup="dialog"
+              aria-label={`Ma demande de devis : ${quoteCount} machine${quoteCount > 1 ? "s" : ""}`}
               className="relative inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-text transition-colors hover:border-primary-text hover:text-primary-text"
             >
               <ShoppingBag className="size-5" aria-hidden="true" />
-              <span
+              <motion.span
+                key={quoteCount}
                 aria-hidden="true"
+                initial={quoteCount > 0 ? { scale: 1.6 } : false}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 15 }}
                 className="absolute -right-1 -top-1 flex min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold leading-5 text-white"
               >
-                {QUOTE_COUNT}
-              </span>
-            </Link>
+                {quoteCount}
+              </motion.span>
+            </button>
             <ThemeToggle />
             <Link
               href={devisHref}

@@ -3,6 +3,7 @@ import { Barlow_Condensed, Inter } from "next/font/google";
 import ThemeProvider from "@/components/ThemeProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import QuoteDrawer from "@/components/QuoteDrawer";
 import WhatsAppFab from "@/components/WhatsAppFab";
 import { site } from "@/data/site";
 import "./globals.css";
@@ -68,6 +69,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </main>
           <Footer />
           <WhatsAppFab />
+          <QuoteDrawer />
         </ThemeProvider>
       </body>
     </html>

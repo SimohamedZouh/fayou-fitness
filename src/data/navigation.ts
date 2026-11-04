@@ -13,4 +13,4 @@ export const navLinks: NavLink[] = [
   { href: "/contact", label: "Contact" },
 ];
 
-export const devisHref = "/contact";
+export const devisHref = "/contact#devis";

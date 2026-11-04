@@ -4,7 +4,7 @@ import PageHeader from "@/components/PageHeader";
 import Breadcrumb from "@/components/Breadcrumb";
 import Section from "@/components/Section";
 import Faq from "@/components/Faq";
-import ButtonLink from "@/components/ButtonLink";
+import LeadForm from "@/components/LeadForm";
 import { faq } from "@/data/faq";
 import { site } from "@/data/site";
 import { telLink, whatsappLink } from "@/lib/whatsapp";
@@ -35,22 +35,17 @@ export default function ContactPage() {
       <section className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-2">
         <div className="space-y-6">
           <h2 className="font-display text-3xl font-extrabold uppercase italic">Nous écrire</h2>
-          {/* Emplacement du formulaire LeadForm (étape 5). */}
-          <div
-            id="formulaire"
-            className="space-y-4 rounded-2xl border border-dashed border-border bg-bg-alt p-6"
-          >
-            <p className="font-semibold">Le formulaire de devis arrive bientôt.</p>
-            <p className="text-sm text-text-muted">
-              En attendant, contactez-nous directement par WhatsApp ou par téléphone.
-            </p>
-            {wa && (
-              <ButtonLink href={wa} external>
-                <MessageCircle className="size-5" aria-hidden="true" />
-                Écrire sur WhatsApp
-              </ButtonLink>
-            )}
+          <div id="devis" className="scroll-mt-28">
+            <LeadForm />
           </div>
+          {wa && (
+            <p className="text-sm text-text-muted">
+              Vous préférez nous écrire directement ?{" "}
+              <a href={wa} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary-text underline">
+                Écrire sur WhatsApp
+              </a>
+            </p>
+          )}
         </div>
 
         <div className="space-y-6">

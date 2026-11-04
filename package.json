@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "logos": "node scripts/make-logos.mjs"
+    "logos": "node scripts/make-logos.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.1",
@@ -33,6 +34,7 @@
     "eslint-config-next": "16.4.4",
     "postcss": "^8.5.32",
     "tailwindcss": "4.1.18",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

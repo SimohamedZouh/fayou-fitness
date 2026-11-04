@@ -21,7 +21,7 @@ export default function Footer() {
   const tel = telLink(site.telephone);
 
   return (
-    <footer className="mt-auto border-t border-border bg-bg-alt pb-[env(safe-area-inset-bottom)]">
+    <footer className="mt-auto border-t border-border bg-bg-alt pb-[calc(9rem+env(safe-area-inset-bottom))] md:pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4">
         <div className="space-y-4">
           <div className="w-32">

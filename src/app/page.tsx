@@ -8,6 +8,10 @@ import CategoryCard from "@/components/CategoryCard";
 import ServiceCard from "@/components/ServiceCard";
 import ProjectCard from "@/components/ProjectCard";
 import Faq from "@/components/Faq";
+import Counter from "@/components/Counter";
+import JsonLd from "@/components/JsonLd";
+import Reveal from "@/components/Reveal";
+import { staggerDelay } from "@/lib/stagger";
 import CtaBanner from "@/components/CtaBanner";
 import Icon from "@/components/Icon";
 import { getCategories, getMachinesByCategorie } from "@/data/catalogue";
@@ -16,13 +20,15 @@ import { getProjets } from "@/data/projects";
 import { getServices } from "@/data/services";
 import { getChiffresCles, site } from "@/data/site";
 import { getAnneeCourante } from "@/lib/annee";
+import { faqJsonLd, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: { absolute: "FAYOU Fitness : salles de sport clé en main, neuf et occasion" },
+export const metadata: Metadata = pageMetadata({
+  title: "FAYOU Fitness : salles de sport clé en main, neuf et occasion",
+  absolute: true,
   description:
     "Vente, installation, maintenance et aménagement de salles de sport au Maroc, pour home gym, villas, riads et hôtels. Depuis 2006. Qualité. Performance. Confiance.",
-  alternates: { canonical: "/" },
-};
+  path: "/",
+});
 
 const methode = [
   { titre: "Étude", texte: "Visite, relevé des mesures et analyse de vos besoins.", icone: "ClipboardList" },
@@ -68,14 +74,8 @@ export default async function Home() {
         <section aria-label="Chiffres clés" className="border-b border-border">
           <ul className="mx-auto grid max-w-7xl gap-6 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
             {chiffres.map((c) => (
-              <li key={c.cle} className="text-center">
-                <p className="font-display text-6xl font-extrabold italic text-primary-text">
-                  {c.valeur}
-                  {c.suffixe}
-                </p>
-                <p className="text-sm font-semibold uppercase tracking-wide text-text-muted">
-                  {c.libelle}
-                </p>
+              <li key={c.cle}>
+                <Counter valeur={c.valeur as number} suffixe={c.suffixe} libelle={c.libelle} />
               </li>
             ))}
           </ul>
@@ -87,10 +87,10 @@ export default async function Home() {
         intro="Tout le matériel pour équiper une salle complète, du cardio à l'aménagement."
       >
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c) => (
-            <li key={c.slug}>
+          {categories.map((c, i) => (
+            <Reveal as="li" key={c.slug} delay={staggerDelay(i)}>
               <CategoryCard categorie={c} count={getMachinesByCategorie(c.slug).length} />
-            </li>
+            </Reveal>
           ))}
         </ul>
       </Section>
@@ -101,10 +101,10 @@ export default async function Home() {
         intro="De l'étude à la maintenance, nous accompagnons chaque étape de votre projet."
       >
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {getServices().map((s) => (
-            <li key={s.slug}>
-              <ServiceCard service={s} />
-            </li>
+          {getServices().map((sv, i) => (
+            <Reveal as="li" key={sv.slug} delay={staggerDelay(i)}>
+              <ServiceCard service={sv} />
+            </Reveal>
           ))}
         </ul>
         <Link
@@ -117,10 +117,10 @@ export default async function Home() {
 
       <Section title="Pour quels projets ?" intro="Chaque lieu a ses contraintes : nous adaptons la salle à votre espace.">
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {getProjets().map((p) => (
-            <li key={p.slug}>
+          {getProjets().map((p, i) => (
+            <Reveal as="li" key={p.slug} delay={staggerDelay(i)}>
               <ProjectCard projet={p} />
-            </li>
+            </Reveal>
           ))}
         </ul>
       </Section>
@@ -128,8 +128,16 @@ export default async function Home() {
       <Section alt title="Notre méthode" intro="Quatre étapes simples, de la première visite au suivi.">
         <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {methode.map((m, i) => (
-            <li key={m.titre} className="relative rounded-2xl border border-border bg-card p-6">
-              <span className="font-display text-5xl font-extrabold italic text-primary-text/30">
+            <Reveal
+              as="li"
+              key={m.titre}
+              delay={staggerDelay(i)}
+              className="relative rounded-2xl border border-border bg-card p-6"
+            >
+              <span
+                aria-hidden="true"
+                className="font-display text-5xl font-extrabold italic text-primary-text/30"
+              >
                 {i + 1}
               </span>
               <div className="mt-2 flex items-center gap-3">
@@ -137,27 +145,28 @@ export default async function Home() {
                 <h3 className="font-display text-2xl font-extrabold uppercase italic">{m.titre}</h3>
               </div>
               <p className="mt-2 text-sm text-text-muted">{m.texte}</p>
-            </li>
+            </Reveal>
           ))}
         </ol>
       </Section>
 
       <Section title="Pourquoi FAYOU" intro={site.signature}>
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {pourquoi.map((p) => (
-            <li key={p.titre} className="space-y-3">
+          {pourquoi.map((p, i) => (
+            <Reveal as="li" key={p.titre} delay={staggerDelay(i)} className="space-y-3">
               <span className="inline-flex size-12 items-center justify-center rounded-xl bg-primary text-white">
                 <Icon name={p.icone} className="size-6" />
               </span>
               <h3 className="text-lg font-bold">{p.titre}</h3>
               <p className="text-sm text-text-muted">{p.texte}</p>
-            </li>
+            </Reveal>
           ))}
         </ul>
       </Section>
 
       <Section alt title="Questions fréquentes">
         <Faq items={faq} />
+        <JsonLd data={faqJsonLd(faq)} />
       </Section>
 
       <CtaBanner />

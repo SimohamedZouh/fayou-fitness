@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import Reveal from "@/components/Reveal";
 
 export function SectionTitle({
   children,
@@ -37,10 +38,10 @@ export default function Section({
   return (
     <section id={id} className={clsx("py-16 sm:py-20", alt && "bg-bg-alt")}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-10 max-w-2xl space-y-3">
+        <Reveal className="mb-10 max-w-2xl space-y-3">
           <SectionTitle>{title}</SectionTitle>
           {intro && <p className="text-text-muted">{intro}</p>}
-        </div>
+        </Reveal>
         {children}
       </div>
     </section>

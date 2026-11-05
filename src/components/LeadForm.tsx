@@ -166,7 +166,9 @@ export default function LeadForm() {
     return (
       <div
         role="status"
-        className="relative space-y-3 overflow-hidden rounded-2xl border border-border bg-bg-alt p-8 text-center"
+        tabIndex={-1}
+        ref={(el) => el?.focus()}
+        className="relative space-y-3 overflow-hidden rounded-2xl border border-border bg-bg-alt p-8 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-text"
       >
         <Confetti />
         <CheckCircle2 className="mx-auto size-12 text-primary-text" aria-hidden="true" />

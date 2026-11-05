@@ -21,7 +21,7 @@ export default function ThemeToggle() {
         setTheme(resolvedTheme === "dark" ? "light" : "dark");
         setTurns((t) => t + 1);
       }}
-      className="inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-text transition-colors hover:border-primary-text hover:text-primary-text"
+      className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-text transition-colors hover:border-primary-text hover:text-primary-text"
     >
       <motion.span
         animate={{ rotate: turns * 180 }}

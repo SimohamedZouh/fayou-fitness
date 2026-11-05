@@ -47,7 +47,15 @@ export function parseFiltres(params: RawParams, categoriesSlugs: string[]): Filt
 }
 
 export const normaliser = (s: string) =>
-  s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+/** Mots d'un texte normalisé (la recherche porte sur le début des mots, pas sur des fragments). */
+const debutsDeMots = (texte: string) => texte.split(/[^a-z0-9]+/).filter(Boolean);
+
+const texteMachine = (m: Machine) =>
+  normaliser(
+    [m.nom, m.description, m.benefice, m.sousCategorie, ...(m.muscles ?? []), ...(m.variantes ?? [])].join(" "),
+  );
 
 export function filtrerMachines(
   machines: Machine[],
@@ -55,18 +63,21 @@ export function filtrerMachines(
   ordreCategories: string[],
 ): Machine[] {
   const q = normaliser(f.q);
+  const motsRecherche = q ? q.split(/\s+/).filter(Boolean) : [];
   const res = machines.filter((m) => {
     if (f.cat && m.categorie !== f.cat) return false;
     if (f.etat && !m.etat.includes(f.etat)) return false;
     if (f.usage && !m.usages.includes(f.usage)) return false;
-    if (q) {
-      const texte = normaliser(
-        [m.nom, m.description, m.benefice, m.sousCategorie, ...(m.muscles ?? []), ...(m.variantes ?? [])].join(" "),
-      );
-      if (!q.split(/\s+/).every((mot) => texte.includes(mot))) return false;
-    }
+    if (q && !motsRecherche.every((mot) => debutsDeMots(texteMachine(m)).some((w) => w.startsWith(mot))))
+      return false;
     return true;
   });
+  // Recherche : le nom prime (correspondance dans le nom avant les autres champs).
+  const score = (m: Machine) =>
+    motsRecherche.length &&
+    motsRecherche.every((mot) => debutsDeMots(normaliser(m.nom)).some((w) => w.startsWith(mot)))
+      ? 0
+      : 1;
   const parNom = (a: Machine, b: Machine) => a.nom.localeCompare(b.nom, "fr");
   if (f.tri === "nom-desc") return res.sort((a, b) => parNom(b, a));
   if (f.tri === "categorie")
@@ -74,5 +85,5 @@ export function filtrerMachines(
       (a, b) =>
         ordreCategories.indexOf(a.categorie) - ordreCategories.indexOf(b.categorie) || parNom(a, b),
     );
-  return res.sort(parNom);
+  return res.sort((x, y) => score(x) - score(y) || parNom(x, y));
 }

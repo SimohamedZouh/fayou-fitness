@@ -7,15 +7,17 @@ import ProductGrid from "@/components/ProductGrid";
 import CategoryCard from "@/components/CategoryCard";
 import CtaBanner from "@/components/CtaBanner";
 import ButtonLink from "@/components/ButtonLink";
+import Icon from "@/components/Icon";
 import { getCategories, getMachines, getMachinesByCategorie } from "@/data/catalogue";
 import { filtrerMachines, parseFiltres } from "@/lib/catalogue-filter";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Machines de sport neuves et d'occasion",
   description:
     "Catalogue FAYOU Fitness : cardio, musculation, racks et bancs, charges libres, training fonctionnel et aménagement. Neuf et occasion, sur devis.",
-  alternates: { canonical: "/machines" },
-};
+  path: "/machines",
+});
 
 const categories = getCategories();
 
@@ -25,12 +27,63 @@ async function Resultats({ searchParams }: { searchParams: PageProps<"/machines"
   const filtres = parseFiltres(params, slugs);
   const machines = filtrerMachines(getMachines(), filtres, slugs);
 
+  // Regroupement par catégorie (onglets + ancres) tant qu’aucun filtre ni tri inversé n’est actif.
+  const groupe =
+    !filtres.q && !filtres.cat && !filtres.etat && !filtres.usage && filtres.tri !== "nom-desc";
+  const groupes = categories
+    .map((c) => ({ categorie: c, liste: machines.filter((m) => m.categorie === c.slug) }))
+    .filter((g) => g.liste.length > 0);
+
   return (
     <>
       <Filters categories={categories.map((c) => ({ slug: c.slug, nom: c.nom }))} total={machines.length} />
       <div className="mt-8">
-        {machines.length > 0 ? (
-          <ProductGrid machines={machines} />
+        {machines.length > 0 && groupe ? (
+          <>
+            <nav
+              aria-label="Catégories du catalogue"
+              className="sticky top-16 z-10 -mx-4 mb-8 border-b border-border bg-bg/90 px-4 backdrop-blur sm:-mx-6 sm:px-6"
+            >
+              <ul className="flex gap-2 overflow-x-auto py-3">
+                {groupes.map(({ categorie: c, liste }) => (
+                  <li key={c.slug} className="shrink-0">
+                    <a
+                      href={`#${c.slug}`}
+                      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-semibold hover:border-primary hover:text-primary-text"
+                    >
+                      <Icon name={c.icone} className="size-4" />
+                      {c.nom}
+                      <span className="text-text-muted">({liste.length})</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div className="space-y-14">
+              {groupes.map(({ categorie: c, liste }) => (
+                <section
+                  key={c.slug}
+                  id={c.slug}
+                  aria-labelledby={`titre-${c.slug}`}
+                  className="scroll-mt-40"
+                >
+                  <h2
+                    id={`titre-${c.slug}`}
+                    className="mb-6 flex items-center gap-3 font-display text-3xl font-extrabold uppercase italic"
+                  >
+                    <Icon name={c.icone} className="size-7 text-primary-text" />
+                    {c.nom}
+                  </h2>
+                  <ProductGrid machines={liste} />
+                </section>
+              ))}
+            </div>
+          </>
+        ) : machines.length > 0 ? (
+          <>
+            <h2 className="sr-only">Résultats</h2>
+            <ProductGrid machines={machines} />
+          </>
         ) : (
           <div className="rounded-2xl border border-dashed border-border p-10 text-center">
             <p className="font-bold">Aucune machine ne correspond à votre recherche.</p>

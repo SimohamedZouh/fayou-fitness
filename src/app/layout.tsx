@@ -5,7 +5,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import QuoteDrawer from "@/components/QuoteDrawer";
 import WhatsAppFab from "@/components/WhatsAppFab";
+import MotionProvider from "@/components/MotionProvider";
+import SmoothScroll from "@/components/SmoothScroll";
+import Analytics from "@/components/Analytics";
+import JsonLd from "@/components/JsonLd";
+import { getCategories } from "@/data/catalogue";
 import { site } from "@/data/site";
+import { localBusinessJsonLd } from "@/lib/seo";
 import "./globals.css";
 
 const display = Barlow_Condensed({
@@ -36,7 +42,10 @@ export const metadata: Metadata = {
     locale: "fr_MA",
     siteName: site.nom,
   },
+  twitter: { card: "summary_large_image" },
 };
+
+const nomsCategories = Object.fromEntries(getCategories().map((c) => [c.slug, c.nom]));
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -55,21 +64,32 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
       className={`${display.variable} ${inter.variable} h-full antialiased`}
     >
+      <head>
+        {/* Sans JavaScript, les éléments à révélation au scroll restent visibles. */}
+        <noscript>
+          <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
+        </noscript>
+      </head>
       <body className="flex min-h-full flex-col">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <a
-            href="#contenu"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-full focus:bg-primary focus:px-5 focus:py-3 focus:font-bold focus:text-white"
-          >
-            Aller au contenu
-          </a>
-          <Header />
-          <main id="contenu" tabIndex={-1} className="flex flex-1 flex-col focus:outline-none">
-            {children}
-          </main>
-          <Footer />
-          <WhatsAppFab />
-          <QuoteDrawer />
+          <MotionProvider>
+            <a
+              href="#contenu"
+              className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[70] focus:rounded-full focus:bg-primary focus:px-5 focus:py-3 focus:font-bold focus:text-white"
+            >
+              Aller au contenu
+            </a>
+            <Header />
+            <main id="contenu" tabIndex={-1} className="flex flex-1 flex-col focus:outline-none">
+              {children}
+            </main>
+            <Footer />
+            <WhatsAppFab />
+            <QuoteDrawer categories={nomsCategories} />
+            <SmoothScroll />
+            <Analytics />
+            <JsonLd data={localBusinessJsonLd()} />
+          </MotionProvider>
         </ThemeProvider>
       </body>
     </html>

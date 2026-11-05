@@ -3,14 +3,17 @@ import PageHeader from "@/components/PageHeader";
 import Breadcrumb from "@/components/Breadcrumb";
 import ProjectCard from "@/components/ProjectCard";
 import CtaBanner from "@/components/CtaBanner";
+import Reveal from "@/components/Reveal";
+import { staggerDelay } from "@/lib/stagger";
 import { getProjets } from "@/data/projects";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Projets : home gym, villas, riads, hôtels",
   description:
     "Home gym, villas, riads, hôtels et projets avant construction : FAYOU Fitness conçoit et installe la salle de sport adaptée à votre lieu.",
-  alternates: { canonical: "/projets" },
-};
+  path: "/projets",
+});
 
 export default function ProjetsPage() {
   return (
@@ -23,10 +26,10 @@ export default function ProjetsPage() {
       </PageHeader>
       <section className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6">
         <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {getProjets().map((p) => (
-            <li key={p.slug}>
+          {getProjets().map((p, i) => (
+            <Reveal as="li" key={p.slug} delay={staggerDelay(i)}>
               <ProjectCard projet={p} detail />
-            </li>
+            </Reveal>
           ))}
         </ul>
         <p className="mt-10 max-w-2xl rounded-2xl border border-dashed border-border p-5 text-sm text-text-muted">

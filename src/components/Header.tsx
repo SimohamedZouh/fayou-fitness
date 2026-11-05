@@ -113,7 +113,7 @@ export default function Header() {
               scrolled ? "w-20 sm:w-24" : "w-24 sm:w-32",
             )}
           >
-            <Logo priority sizes="128px" />
+            <Logo eager fetchPriority="high" sizes="128px" />
           </Link>
 
           <nav aria-label="Navigation principale" className="hidden lg:block">
@@ -147,10 +147,11 @@ export default function Header() {
           <div className="flex items-center gap-2">
             <button
               type="button"
+              id="quote-cart-button"
               onClick={openDrawer}
               aria-haspopup="dialog"
               aria-label={`Ma demande de devis : ${quoteCount} machine${quoteCount > 1 ? "s" : ""}`}
-              className="relative inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-text transition-colors hover:border-primary-text hover:text-primary-text"
+              className="relative inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-text transition-colors hover:border-primary-text hover:text-primary-text"
             >
               <ShoppingBag className="size-5" aria-hidden="true" />
               <motion.span
@@ -178,7 +179,7 @@ export default function Header() {
               aria-expanded={open}
               aria-controls="menu-mobile"
               onClick={() => (open ? close() : setOpen(true))}
-              className="inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-text lg:hidden"
+              className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-text lg:hidden"
             >
               {open ? (
                 <X className="size-5" aria-hidden="true" />
@@ -198,6 +199,7 @@ export default function Header() {
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
+            data-lenis-prevent=""
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

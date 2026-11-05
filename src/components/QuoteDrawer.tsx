@@ -9,7 +9,8 @@ import { QUANTITE_MAX, hydrateQuoteStore, useQuoteStore } from "@/lib/quote-stor
 const FOCUSABLE = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
 /** Tiroir latéral du panier de devis. Monté une fois dans le layout. */
-export default function QuoteDrawer() {
+/** `categories` : nom d’affichage de chaque catégorie (slug -> nom), fourni par le layout. */
+export default function QuoteDrawer({ categories }: { categories: Record<string, string> }) {
   const open = useQuoteStore((s) => s.drawerOpen);
   const items = useQuoteStore((s) => s.items);
   const hydrated = useQuoteStore((s) => s.hydrated);
@@ -86,6 +87,7 @@ export default function QuoteDrawer() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="quote-drawer-title"
+              data-lenis-prevent=""
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
@@ -104,7 +106,7 @@ export default function QuoteDrawer() {
                   data-autofocus
                   onClick={close}
                   aria-label="Fermer le panier de devis"
-                  className="inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-text hover:border-primary-text hover:text-primary-text"
+                  className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-card text-text hover:border-primary-text hover:text-primary-text"
                 >
                   <X className="size-5" aria-hidden="true" />
                 </button>
@@ -136,15 +138,15 @@ export default function QuoteDrawer() {
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="font-semibold leading-snug">{i.nom}</p>
-                            <p className="text-xs capitalize text-text-muted">
-                              {i.categorie.replace(/-/g, " ")}
+                            <p className="text-xs text-text-muted">
+                              {categories[i.categorie] ?? i.categorie}
                             </p>
                           </div>
                           <button
                             type="button"
                             onClick={() => remove(i.slug)}
                             aria-label={`Retirer ${i.nom} du devis`}
-                            className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-text-muted hover:text-primary-text"
+                            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-text-muted hover:text-primary-text"
                           >
                             <Trash2 className="size-5" aria-hidden="true" />
                           </button>
@@ -159,7 +161,7 @@ export default function QuoteDrawer() {
                             onClick={() => setQuantite(i.slug, i.quantite - 1)}
                             disabled={i.quantite <= 1}
                             aria-label={`Diminuer la quantité de ${i.nom}`}
-                            className="inline-flex size-10 items-center justify-center rounded-full hover:text-primary-text disabled:opacity-40"
+                            className="inline-flex size-11 items-center justify-center rounded-full hover:text-primary-text disabled:opacity-40"
                           >
                             <Minus className="size-4" aria-hidden="true" />
                           </button>
@@ -171,7 +173,7 @@ export default function QuoteDrawer() {
                             onClick={() => setQuantite(i.slug, i.quantite + 1)}
                             disabled={i.quantite >= QUANTITE_MAX}
                             aria-label={`Augmenter la quantité de ${i.nom}`}
-                            className="inline-flex size-10 items-center justify-center rounded-full hover:text-primary-text disabled:opacity-40"
+                            className="inline-flex size-11 items-center justify-center rounded-full hover:text-primary-text disabled:opacity-40"
                           >
                             <Plus className="size-4" aria-hidden="true" />
                           </button>

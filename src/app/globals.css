@@ -58,20 +58,71 @@ body {
   outline-offset: 2px;
 }
 
-/* Marquee simple (étape 4) : défilement CSS, stoppé si mouvement réduit */
-@keyframes marquee {
+/* Sur un fond violet, le focus est blanc (le violet serait invisible) */
+.on-primary :focus-visible {
+  outline-color: #ffffff;
+}
+
+/* Hero : titre mot par mot (masque + glissement), transform uniquement */
+.hero-word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.08em 0.08em 0.1em;
+  margin: -0.08em -0.08em -0.1em;
+}
+.hero-word {
+  display: inline-block;
+  animation: hero-word-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes hero-word-in {
+  from {
+    transform: translateY(110%);
+  }
   to {
-    transform: translateX(-50%);
+    transform: translateY(0);
   }
 }
-.marquee-track {
-  animation: marquee 40s linear infinite;
+
+/* Transition entre pages (template.tsx) : fondu court */
+.page-transition {
+  animation: page-in 0.25s ease-out backwards;
 }
-.marquee-track:hover {
-  animation-play-state: paused;
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
+
+/* Lenis (défilement fluide) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Mouvement réduit : tout est affiché tel quel */
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .hero-word,
+  .page-transition {
     animation: none;
   }
 }

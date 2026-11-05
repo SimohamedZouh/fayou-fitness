@@ -4,17 +4,19 @@ import PageHeader from "@/components/PageHeader";
 import Breadcrumb from "@/components/Breadcrumb";
 import Section from "@/components/Section";
 import Faq from "@/components/Faq";
+import JsonLd from "@/components/JsonLd";
 import LeadForm from "@/components/LeadForm";
 import { faq } from "@/data/faq";
 import { site } from "@/data/site";
 import { telLink, whatsappLink } from "@/lib/whatsapp";
+import { faqJsonLd, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact et devis gratuit",
   description:
     "Contactez FAYOU Fitness pour un devis gratuit : Casablanca, Marrakech, intervention dans tout le Maroc.",
-  alternates: { canonical: "/contact" },
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   const wa = whatsappLink(
@@ -97,23 +99,34 @@ export default function ContactPage() {
             )}
           </ul>
 
-          <div className="overflow-hidden rounded-2xl border border-border">
-            <iframe
-              title="Carte de Casablanca (zone indicative)"
-              src="https://www.openstreetmap.org/export/embed.html?bbox=-7.75%2C33.50%2C-7.45%2C33.66&layer=mapnik"
-              loading="lazy"
-              referrerPolicy="no-referrer"
-              className="h-72 w-full"
-            />
-            <p className="bg-bg-alt px-4 py-2 text-xs text-text-muted">
-              Carte indicative de Casablanca. L&apos;adresse précise sera communiquée prochainement.
+          <div className="space-y-3 rounded-2xl border border-border bg-bg-alt p-5">
+            <p className="font-semibold">Où nous trouver</p>
+            <p className="text-sm text-text-muted">
+              Basés à {site.villes.join(" et ")}. L&apos;adresse précise sera communiquée prochainement.
             </p>
+            <ul className="flex flex-wrap gap-2">
+              {site.villes.map((ville) => (
+                <li key={ville}>
+                  <a
+                    href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(`${ville}, Maroc`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-11 items-center gap-2 rounded-full border-2 border-primary px-4 text-sm font-bold text-primary-text hover:bg-primary hover:text-white"
+                  >
+                    <MapPin className="size-4" aria-hidden="true" />
+                    Voir {ville} sur la carte
+                    <span className="sr-only"> (nouvel onglet)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
 
       <Section alt title="Questions fréquentes">
         <Faq items={faq} />
+        <JsonLd data={faqJsonLd(faq)} />
       </Section>
     </>
   );

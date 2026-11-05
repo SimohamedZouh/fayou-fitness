@@ -3,12 +3,13 @@ import Icon from "@/components/Icon";
 import type { Projet } from "@/types";
 
 export default function ProjectCard({ projet, detail = false }: { projet: Projet; detail?: boolean }) {
+  const Titre = detail ? "h2" : "h3"; // h2 sous le h1 des pages dédiées, h3 sous un h2 d’accueil
   return (
     <article className="flex h-full flex-col gap-4 rounded-2xl border border-border bg-card p-6">
       <span className="inline-flex size-12 items-center justify-center rounded-xl bg-bg-alt text-primary-text">
         <Icon name={projet.icone} className="size-6" />
       </span>
-      <h3 className="font-display text-2xl font-extrabold uppercase italic">{projet.nom}</h3>
+      <Titre className="font-display text-2xl font-extrabold uppercase italic">{projet.nom}</Titre>
       <p className="text-text-muted">{projet.resume}</p>
       {detail && (
         <ul className="space-y-2 text-sm">

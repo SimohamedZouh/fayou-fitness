@@ -6,6 +6,7 @@ import PageHeader from "@/components/PageHeader";
 import ProductGrid from "@/components/ProductGrid";
 import CtaBanner from "@/components/CtaBanner";
 import Icon from "@/components/Icon";
+import JsonLd from "@/components/JsonLd";
 import {
   getCategorieBySlug,
   getCategorieParams,
@@ -13,6 +14,10 @@ import {
   getMachinesByCategorie,
   getMachinesBySousCategorie,
 } from "@/data/catalogue";
+import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
+
+/** Slug inconnu : HTTP 404 dès la première requête (pas de soft 404). */
+export const ensureStatic = "navigation";
 
 export function generateStaticParams() {
   return getCategorieParams();
@@ -22,11 +27,11 @@ export async function generateMetadata({ params }: PageProps<"/machines/[categor
   const { categorie } = await params;
   const cat = getCategorieBySlug(categorie);
   if (!cat) return { title: "Catégorie introuvable" };
-  return {
+  return pageMetadata({
     title: `${cat.nom} : matériel neuf et d'occasion`,
     description: `${cat.description} Neuf et occasion, sur devis, avec FAYOU Fitness.`,
-    alternates: { canonical: `/machines/${cat.slug}` },
-  };
+    path: `/machines/${cat.slug}`,
+  });
 }
 
 export default async function CategoriePage({ params }: PageProps<"/machines/[categorie]">) {
@@ -35,18 +40,18 @@ export default async function CategoriePage({ params }: PageProps<"/machines/[ca
   if (!cat) notFound();
 
   const total = getMachinesByCategorie(cat.slug).length;
+  const fil = [
+    { label: "Accueil", href: "/" },
+    { label: "Machines", href: "/machines" },
+    { label: cat.nom, href: `/machines/${cat.slug}` },
+  ];
   const autres = getCategories().filter((c) => c.slug !== cat.slug);
 
   return (
     <>
       <PageHeader titre={cat.nom} intro={`${cat.description} ${total} machines, toutes sur devis.`}>
-        <Breadcrumb
-          items={[
-            { label: "Accueil", href: "/" },
-            { label: "Machines", href: "/machines" },
-            { label: cat.nom },
-          ]}
-        />
+        <Breadcrumb items={[...fil.slice(0, 2), { label: cat.nom }]} />
+        <JsonLd data={breadcrumbJsonLd(fil)} />
       </PageHeader>
 
       <div className="sticky top-16 z-10 border-b border-border bg-bg/90 backdrop-blur">

@@ -25,6 +25,12 @@ export async function POST(req: Request) {
     );
   }
 
+  // Taille annoncée : refus avant toute lecture du corps.
+  const annonce = Number(req.headers.get("content-length"));
+  if (Number.isFinite(annonce) && annonce > MAX_BODY) {
+    return NextResponse.json({ ok: false, reason: "too_large" }, { status: 413 });
+  }
+
   let raw: unknown;
   try {
     const text = await req.text();
@@ -49,10 +55,10 @@ export async function POST(req: Request) {
       {
         ok: false,
         reason: "invalid",
-        errors: parsed.error.issues.map((i) => ({
-          champ: String(i.path[0] ?? ""),
-          message: i.message,
-        })),
+        // Un seul message par champ.
+        errors: parsed.error.issues
+          .map((i) => ({ champ: String(i.path[0] ?? ""), message: i.message }))
+          .filter((e, idx, all) => all.findIndex((o) => o.champ === e.champ) === idx),
       },
       { status: 400 },
     );

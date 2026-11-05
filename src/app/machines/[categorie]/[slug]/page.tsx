@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Check } from "lucide-react";
 import Breadcrumb from "@/components/Breadcrumb";
 import AddToQuoteButton from "@/components/AddToQuoteButton";
+import JsonLd from "@/components/JsonLd";
 import ButtonLink from "@/components/ButtonLink";
 import ProductGrid from "@/components/ProductGrid";
 import { EtatBadges, ProductVisual } from "@/components/ProductCard";
@@ -11,7 +12,11 @@ import { getCategorieBySlug, getMachine, getMachineParams, getMachinesSimilaires
 import { devisHref } from "@/data/navigation";
 import { site } from "@/data/site";
 import { USAGE_LABELS } from "@/lib/catalogue-filter";
+import { breadcrumbJsonLd, pageMetadata, productJsonLd } from "@/lib/seo";
 import { whatsappLink } from "@/lib/whatsapp";
+
+/** Slug inconnu : HTTP 404 dès la première requête (pas de soft 404). */
+export const ensureStatic = "navigation";
 
 export function generateStaticParams() {
   return getMachineParams();
@@ -23,11 +28,11 @@ export async function generateMetadata({
   const { categorie, slug } = await params;
   const machine = getMachine(categorie, slug);
   if (!machine) return { title: "Machine introuvable" };
-  return {
+  return pageMetadata({
     title: `${machine.nom} : neuf et occasion`,
     description: `${machine.description} Sur devis, installation et maintenance par FAYOU Fitness.`,
-    alternates: { canonical: `/machines/${machine.categorie}/${machine.slug}` },
-  };
+    path: `/machines/${machine.categorie}/${machine.slug}`,
+  });
 }
 
 export default async function MachinePage({ params }: PageProps<"/machines/[categorie]/[slug]">) {
@@ -36,6 +41,12 @@ export default async function MachinePage({ params }: PageProps<"/machines/[cate
   const cat = getCategorieBySlug(categorie);
   if (!machine || !cat) notFound();
 
+  const fil = [
+    { label: "Accueil", href: "/" },
+    { label: "Machines", href: "/machines" },
+    { label: cat.nom, href: `/machines/${cat.slug}` },
+    { label: machine.nom, href: `/machines/${machine.categorie}/${machine.slug}` },
+  ];
   const similaires = getMachinesSimilaires(machine, 4);
   const specs = machine.specs ? Object.entries(machine.specs) : [];
   const wa = whatsappLink(
@@ -47,14 +58,8 @@ export default async function MachinePage({ params }: PageProps<"/machines/[cate
     <>
       <div className="border-b border-border bg-bg-alt">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
-          <Breadcrumb
-            items={[
-              { label: "Accueil", href: "/" },
-              { label: "Machines", href: "/machines" },
-              { label: cat.nom, href: `/machines/${cat.slug}` },
-              { label: machine.nom },
-            ]}
-          />
+          <Breadcrumb items={[...fil.slice(0, 3), { label: machine.nom }]} />
+          <JsonLd data={[productJsonLd(machine, cat), breadcrumbJsonLd(fil)]} />
         </div>
       </div>
 

@@ -4,15 +4,18 @@ import Breadcrumb from "@/components/Breadcrumb";
 import Section from "@/components/Section";
 import CtaBanner from "@/components/CtaBanner";
 import Icon from "@/components/Icon";
+import Reveal from "@/components/Reveal";
+import { staggerDelay } from "@/lib/stagger";
 import { site } from "@/data/site";
 import { getAnneeCourante } from "@/lib/annee";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "À propos : FAYOU Fitness depuis 2006",
+export const metadata: Metadata = pageMetadata({
+  title: "À propos : notre histoire depuis 2006",
   description:
     "FAYOU Fitness équipe les salles de sport depuis 2006 à Casablanca et Marrakech. Qualité, Performance, Confiance.",
-  alternates: { canonical: "/a-propos" },
-};
+  path: "/a-propos",
+});
 
 const valeurs = [
   {
@@ -61,14 +64,19 @@ export default async function AProposPage() {
 
       <Section alt title="Nos valeurs" intro={site.signature}>
         <ul className="grid gap-6 md:grid-cols-3">
-          {valeurs.map((v) => (
-            <li key={v.titre} className="space-y-3 rounded-2xl border border-border bg-card p-6">
+          {valeurs.map((v, i) => (
+            <Reveal
+              as="li"
+              key={v.titre}
+              delay={staggerDelay(i)}
+              className="space-y-3 rounded-2xl border border-border bg-card p-6"
+            >
               <span className="inline-flex size-12 items-center justify-center rounded-xl bg-primary text-white">
                 <Icon name={v.icone} className="size-6" />
               </span>
               <h3 className="font-display text-2xl font-extrabold uppercase italic">{v.titre}</h3>
               <p className="text-text-muted">{v.texte}</p>
-            </li>
+            </Reveal>
           ))}
         </ul>
       </Section>

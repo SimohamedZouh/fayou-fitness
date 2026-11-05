@@ -13,8 +13,11 @@ export const leadSchema = z.object({
     .trim()
     .min(1, "Veuillez indiquer votre numéro de téléphone.")
     .max(20, "Numéro de téléphone trop long.")
-    .regex(/^\+?[\d\s().-]+$/, "Numéro de téléphone invalide.")
-    .refine((v) => nbChiffres(v) >= 8 && nbChiffres(v) <= 15, "Numéro de téléphone invalide."),
+    // Un seul contrôle (format + nombre de chiffres) : un seul message d’erreur.
+    .refine(
+      (v) => /^\+?[\d\s().-]+$/.test(v) && nbChiffres(v) >= 8 && nbChiffres(v) <= 15,
+      "Numéro de téléphone invalide.",
+    ),
   projet: z.enum(TYPES_PROJET, { error: "Veuillez choisir un type de projet." }),
   ville: z.string().trim().min(2, "Veuillez indiquer votre ville.").max(80),
   machines: z.array(z.string().max(120)).max(100).default([]),

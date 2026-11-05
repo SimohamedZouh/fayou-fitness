@@ -6,8 +6,8 @@ type Variant = "primary" | "outline" | "white" | "ghost-white";
 const variants: Record<Variant, string> = {
   primary: "bg-primary text-white hover:brightness-110",
   outline: "border-2 border-primary text-primary-text hover:bg-primary hover:text-white",
-  white: "bg-white text-[#7f00fb] hover:bg-bg-alt",
-  "ghost-white": "border-2 border-white text-white hover:bg-white hover:text-[#7f00fb]",
+  white: "bg-white text-primary hover:bg-bg-alt",
+  "ghost-white": "border-2 border-white text-white hover:bg-white hover:text-primary",
 };
 
 export default function ButtonLink({

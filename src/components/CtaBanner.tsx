@@ -9,7 +9,7 @@ export default function CtaBanner() {
     "Bonjour FAYOU Fitness, je souhaite un devis pour une salle de sport.",
   );
   return (
-    <section className="bg-primary text-white">
+    <section className="on-primary bg-primary text-white">
       <div className="mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-14 sm:px-6 md:flex-row md:items-center md:justify-between">
         <div className="max-w-2xl space-y-2">
           <h2 className="font-display text-3xl font-extrabold uppercase italic leading-tight sm:text-4xl">

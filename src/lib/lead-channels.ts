@@ -83,11 +83,14 @@ async function guarded(
   }
 }
 
-function sendSheets(lead: Lead): Promise<ChannelResult> | null {
-  const url = clean(process.env.GOOGLE_SCRIPT_URL);
-  if (!url) return null;
-  return guarded("sheets", () =>
-    fetch(url, {
+/**
+ * Apps Script répond HTTP 200 même pour une page de connexion Google ou une erreur.
+ * Succès uniquement si la réponse finale est OK ET le corps est du JSON { ok: true }.
+ * Jamais d'URL dans les journaux (elle contient l'identifiant du déploiement).
+ */
+async function sendSheetsRequest(url: string, lead: Lead): Promise<ChannelResult> {
+  try {
+    const res = await fetch(url, {
       method: "POST",
       // Apps Script lit e.postData.contents quel que soit le Content-Type.
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -100,8 +103,46 @@ function sendSheets(lead: Lead): Promise<ChannelResult> | null {
         details: sheetSafe(lead.details),
       }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
-    }),
-  );
+    });
+    const type = res.headers.get("content-type") ?? "inconnu";
+    let finalHost = "";
+    try {
+      finalHost = res.url ? new URL(res.url).hostname : "";
+    } catch {}
+    const hostInfo = finalHost === "accounts.google.com" ? " ; redirigé vers accounts.google.com" : "";
+
+    let parsed: unknown = undefined;
+    let text = "";
+    try {
+      text = await res.text();
+      parsed = JSON.parse(text);
+    } catch {}
+    const ok =
+      res.ok &&
+      typeof parsed === "object" &&
+      parsed !== null &&
+      (parsed as { ok?: unknown }).ok === true;
+    if (ok) return { channel: "sheets", status: "ok" };
+
+    const looksHtml = /^\s*<(!doctype|html)/i.test(text) || type.includes("text/html");
+    const reason = looksHtml
+      ? "HTML/connexion requise — vérifier que l'accès est 'Tout le monde'"
+      : "corps non conforme (JSON { ok: true } attendu)";
+    console.error(
+      `[lead] canal sheets en échec : réponse inattendue du script : ${reason} ; HTTP ${res.status} ; content-type ${type}${hostInfo}`,
+    );
+    return { channel: "sheets", status: "failed" };
+  } catch (err) {
+    const name = err instanceof Error ? err.name : "Error";
+    console.error(`[lead] canal sheets en échec : ${name}`);
+    return { channel: "sheets", status: "failed" };
+  }
+}
+
+function sendSheets(lead: Lead): Promise<ChannelResult> | null {
+  const url = clean(process.env.GOOGLE_SCRIPT_URL);
+  if (!url) return null;
+  return sendSheetsRequest(url, lead);
 }
 
 function sendEmail(lead: Lead): Promise<ChannelResult> | null {

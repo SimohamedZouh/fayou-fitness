@@ -81,6 +81,8 @@ Le formulaire envoie la demande à `/api/lead`, qui lance **en parallèle** les 
 
 Le site envoie `nom`, `tel`, `projet`, `ville`, `machines`, `details` (les valeurs commençant par `=`, `+`, `-` ou `@` sont préfixées d'une apostrophe pour éviter l'interprétation en formule dans le Sheet ; cette apostrophe peut donc apparaître dans l'email du script).
 
+Dépannage : si le formulaire propose le secours WhatsApp au lieu de « Demande envoyée », vérifiez dans Déployer > Gérer les déploiements que « Qui a accès » est sur « Tout le monde ». Un nouveau déploiement change l'URL : modifiez le déploiement existant (nouvelle version) pour la conserver, sinon mettez à jour `GOOGLE_SCRIPT_URL` dans Vercel et redéployez.
+
 Remarque : le script reste dans `docs/` comme modèle. Ne committez pas de vrais identifiants dans ce fichier : gardez-les dans votre déploiement Apps Script.
 
 ### 2. Email (Resend)

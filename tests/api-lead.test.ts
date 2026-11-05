@@ -86,7 +86,7 @@ describe("POST /api/lead", () => {
     process.env.LEAD_FROM_EMAIL = "b@example.com";
     fetchMock.mockImplementation(async (url: string) => {
       if (String(url).includes("resend")) return new Response("boom", { status: 500 });
-      return new Response("{}", { status: 200 });
+      return new Response('{"ok":true}', { status: 200 });
     });
 
     const res = await POST(requete(valide));
@@ -118,6 +118,50 @@ describe("POST /api/lead", () => {
     const res = await POST(requete(valide));
     expect(res.status).toBe(502);
     expect((await res.json()).reason).toBe("send_failed");
+  });
+
+  describe("canal sheets : validation de la réponse du script", () => {
+    const SECRET_URL = "https://script.google.com/macros/s/SECRETID/exec";
+    beforeEach(() => {
+      process.env.GOOGLE_SCRIPT_URL = SECRET_URL;
+    });
+    const logs = () => vi.mocked(console.error).mock.calls.flat().join(" ");
+
+    it("{ok:true} : succès", async () => {
+      fetchMock.mockResolvedValue(
+        new Response('{"ok":true}', { status: 200, headers: { "Content-Type": "application/json" } }),
+      );
+      const res = await POST(requete(valide));
+      expect(res.status).toBe(200);
+      expect(await res.json()).toEqual({ ok: true });
+    });
+
+    it("page HTML de connexion en 200 : échec, 502 send_failed, URL non fuitée", async () => {
+      fetchMock.mockResolvedValue(
+        new Response("<!DOCTYPE html><html>Sign in</html>", {
+          status: 200,
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        }),
+      );
+      const res = await POST(requete(valide));
+      expect(res.status).toBe(502);
+      expect((await res.json()).reason).toBe("send_failed");
+      expect(logs()).toContain("Tout le monde");
+      expect(logs()).not.toContain("SECRETID");
+    });
+
+    it("{ok:false} : échec", async () => {
+      fetchMock.mockResolvedValue(new Response('{"ok":false}', { status: 200 }));
+      const res = await POST(requete(valide));
+      expect(res.status).toBe(502);
+      expect(logs()).not.toContain("SECRETID");
+    });
+
+    it("corps non-JSON : échec", async () => {
+      fetchMock.mockResolvedValue(new Response("OK", { status: 200 }));
+      const res = await POST(requete(valide));
+      expect(res.status).toBe(502);
+    });
   });
 
   it("limite la fréquence par IP (429)", async () => {

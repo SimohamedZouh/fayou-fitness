@@ -5,6 +5,40 @@ const ANNEE_FONDATION = 2006;
 /** Convertit une variable d'environnement vide en null. */
 const env = (v: string | undefined) => (v && v.trim() ? v.trim() : null);
 
+const URL_LOCALE = "http://localhost:3000";
+
+/** Ajoute https:// à un nom d'hôte Vercel (fourni sans schéma). */
+const avecSchema = (h: string) => (/^https?:\/\//.test(h) ? h : `https://${h}`);
+
+/**
+ * URL publique du site (sitemap, canonical, Open Graph, JSON-LD).
+ * Ordre : NEXT_PUBLIC_SITE_URL, puis (sur Vercel) VERCEL_PROJECT_PRODUCTION_URL,
+ * puis VERCEL_URL, enfin localhost. Un repli sur Vercel ou localhost en production
+ * déclenche un avertissement côté serveur.
+ */
+export function resolveSiteUrl(e: Record<string, string | undefined> = process.env): string {
+  const explicite = env(e.NEXT_PUBLIC_SITE_URL);
+  if (explicite) return explicite.replace(/\/+$/, "");
+
+  const vercel = env(e.VERCEL_PROJECT_PRODUCTION_URL) ?? env(e.VERCEL_URL);
+  const enProduction = e.NODE_ENV === "production";
+  const surServeur = typeof window === "undefined";
+  if (vercel) {
+    if (enProduction && surServeur) {
+      console.warn(
+        `[site] NEXT_PUBLIC_SITE_URL est vide : repli sur ${avecSchema(vercel)}. Renseignez-la avec le domaine définitif.`,
+      );
+    }
+    return avecSchema(vercel).replace(/\/+$/, "");
+  }
+  if (enProduction && surServeur) {
+    console.warn(
+      `[site] NEXT_PUBLIC_SITE_URL est vide : le sitemap, les canonical et le JSON-LD pointeront vers ${URL_LOCALE}. Renseignez-la avant la mise en production.`,
+    );
+  }
+  return URL_LOCALE;
+}
+
 export const site: SiteConfig = {
   nom: "FAYOU Fitness",
   signature: "Qualité. Performance. Confiance.",
@@ -20,7 +54,7 @@ export const site: SiteConfig = {
   email: null,
   // À CONFIRMER : adresse précise des showrooms / bureaux
   adresse: null,
-  url: env(process.env.NEXT_PUBLIC_SITE_URL) ?? "http://localhost:3000",
+  url: resolveSiteUrl(),
 };
 
 /** Années d'expérience depuis 2006. L'appelant fournit l'année courante. */

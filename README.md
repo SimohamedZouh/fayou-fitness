@@ -64,7 +64,7 @@ Les clés (Google, Resend, WhatsApp, CallMeBot) ne sont lues que côté serveur,
 
 ### Garde-fou sur `NEXT_PUBLIC_SITE_URL`
 
-Si la variable est vide, le site cherche dans l'ordre `VERCEL_PROJECT_PRODUCTION_URL`, puis `VERCEL_URL` (fournies par Vercel), puis `http://localhost:3000`. En build de production, un repli sur l'une de ces valeurs affiche un avertissement `[site] NEXT_PUBLIC_SITE_URL est vide ...` dans les logs. Le repli Vercel donne une URL en `*.vercel.app` : correct pour tester, pas pour le domaine définitif. Renseignez toujours la variable avec le vrai domaine.
+La variable est lue en accès direct (`process.env.NEXT_PUBLIC_SITE_URL`) et donc intégrée au build : elle doit être définie **au moment du `next build`**. Si elle est vide, le site cherche dans l'ordre `VERCEL_PROJECT_PRODUCTION_URL`, puis `VERCEL_URL` (fournies par Vercel), puis `http://localhost:3000`. En build de production, un repli sur l'une de ces valeurs affiche un avertissement `[site] NEXT_PUBLIC_SITE_URL est vide ...` dans les logs. Le repli Vercel donne une URL en `*.vercel.app` : correct pour tester, pas pour le domaine définitif. Renseignez toujours la variable avec le vrai domaine.
 
 ## Canaux de `/api/lead`
 
@@ -74,7 +74,7 @@ Le formulaire envoie la demande à `/api/lead`, qui lance **en parallèle** les 
 
 1. Créez un Google Sheet et copiez son identifiant (la partie de l'URL entre `/d/` et `/edit`).
 2. Dans le Sheet : Extensions > Apps Script. Collez le contenu de `docs/google-apps-script.gs`.
-3. Renseignez `SHEET_ID` en haut du script. Si vous voulez **uniquement** l'enregistrement dans le Sheet, laissez de côté l'email et CallMeBot (voir « Doublons » ci-dessous).
+3. Renseignez `SHEET_ID` en haut du script, ainsi que les constantes `EMAIL`, `WA_PHONE` et `WA_APIKEY` (email de réception, numéro WhatsApp et clé CallMeBot), ou neutralisez-les selon la section « Doublons » ci-dessous. Si vous voulez **uniquement** l'enregistrement dans le Sheet, laissez de côté l'email et CallMeBot (voir « Doublons » ci-dessous).
 4. Déployer > Nouveau déploiement > type **Application Web** ; exécuter en tant que **vous** ; accès : **Tout le monde**. Autorisez les droits demandés.
 5. Copiez l'URL (`https://script.google.com/macros/s/.../exec`) dans `GOOGLE_SCRIPT_URL`.
 6. Après toute modification du script : Déployer > Gérer les déploiements > nouvelle version.
@@ -135,12 +135,12 @@ Protections de l'API : validation `zod`, champ piège anti-spam (honeypot), limi
 - **État neuf / occasion et usages** (home gym, hôtel, pro) : valeurs **estimées**, à confirmer machine par machine.
 - **Page /contact** : la carte interactive est remplacée par des liens (aucune adresse n'est connue ; évite aussi un iframe tiers).
 - **JSON-LD `Product` sans offre** : ni prix ni marque (rien n'est fourni). Google n'affichera donc pas d'extraits produit enrichis avec prix.
-- **Chiffres clés** : seuls « 20 ans d'expérience » (calculé depuis 2006) est affiché ; les tuiles « projets réalisés » et « équipements installés » sont masquées tant que les chiffres ne sont pas fournis.
+- **Chiffres clés** : seul « 20 ans d'expérience » (calculé depuis 2006) est affiché ; les tuiles « projets réalisés » et « équipements installés » sont masquées tant que les chiffres ne sont pas fournis.
 - **Textes du catalogue** : à relire et valider.
 
 ## Performance
 
-Les scores Lighthouse mesurés pendant le développement (38 à 55 en performance) l'ont été sur une machine lente et en mode développement/local : ils ne sont pas représentatifs. **À remesurer sur PageSpeed Insights après déploiement** (objectif : 95+). Les logos sont préchargés plusieurs fois (header et hero, versions claire et sombre) : point d'optimisation possible si le LCP le justifie.
+Les scores Lighthouse mesurés pendant le développement (38 à 55 en performance) l'ont été sur le build de production (`next start`) en local, sur une machine lente : ils ne sont pas représentatifs. **À remesurer sur PageSpeed Insights après déploiement** (objectif : 95+). Les logos sont préchargés plusieurs fois (header et hero, versions claire et sombre) : point d'optimisation possible si le LCP le justifie.
 
 ## Informations à fournir par FAYOU
 
@@ -154,6 +154,7 @@ Les scores Lighthouse mesurés pendant le développement (38 à 55 en performanc
 | Adresse (showroom, bureaux), si affichée | `adresse` dans `src/data/site.ts` (actuellement `null`) |
 | Photos des machines et des réalisations | `public/products/` + champ `image` des catégories dans `src/data/catalogue.ts` ; les pages Projets n'affichent pas encore de photos de réalisations (à ajouter) |
 | Marques éventuelles (et prix si souhaité) | `src/data/catalogue.ts` (champs à ajouter : aucune marque ni prix n'est affiché aujourd'hui) |
+| Numéro WhatsApp et clé CallMeBot (si conservés dans le script) | constantes `WA_PHONE` et `WA_APIKEY` du script Apps Script |
 | Clé / URL Google Apps Script | variable `GOOGLE_SCRIPT_URL` |
 | Clé Resend | variable `RESEND_API_KEY` |
 | Jeton, identifiant de numéro et destinataire WhatsApp Cloud API, ou clé CallMeBot | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID`, `WHATSAPP_TO` ou `CALLMEBOT_APIKEY` |

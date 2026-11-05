@@ -16,12 +16,27 @@ const avecSchema = (h: string) => (/^https?:\/\//.test(h) ? h : `https://${h}`);
  * puis VERCEL_URL, enfin localhost. Un repli sur Vercel ou localhost en production
  * déclenche un avertissement côté serveur.
  */
-export function resolveSiteUrl(e: Record<string, string | undefined> = process.env): string {
-  const explicite = env(e.NEXT_PUBLIC_SITE_URL);
+export function resolveSiteUrl(e?: Record<string, string | undefined>): string {
+  // Accès directs à process.env.X : Next les inline au build (NEXT_PUBLIC_*).
+  // Le paramètre `e` sert uniquement aux tests.
+  const lire = (k: string): string | undefined => {
+    if (e) return e[k];
+    switch (k) {
+      case "NEXT_PUBLIC_SITE_URL":
+        return process.env.NEXT_PUBLIC_SITE_URL;
+      case "VERCEL_PROJECT_PRODUCTION_URL":
+        return process.env.VERCEL_PROJECT_PRODUCTION_URL;
+      case "VERCEL_URL":
+        return process.env.VERCEL_URL;
+      default:
+        return process.env.NODE_ENV;
+    }
+  };
+  const explicite = env(lire("NEXT_PUBLIC_SITE_URL"));
   if (explicite) return explicite.replace(/\/+$/, "");
 
-  const vercel = env(e.VERCEL_PROJECT_PRODUCTION_URL) ?? env(e.VERCEL_URL);
-  const enProduction = e.NODE_ENV === "production";
+  const vercel = env(lire("VERCEL_PROJECT_PRODUCTION_URL")) ?? env(lire("VERCEL_URL"));
+  const enProduction = lire("NODE_ENV") === "production";
   const surServeur = typeof window === "undefined";
   if (vercel) {
     if (enProduction && surServeur) {

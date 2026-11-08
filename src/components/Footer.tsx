@@ -105,7 +105,10 @@ export default function Footer() {
 
       <div className="border-t border-border">
         <p className="mx-auto max-w-7xl px-4 py-5 text-xs text-text-muted sm:px-6">
-          © <AnneeCourante /> {site.nom}. Tous droits réservés.
+          © <AnneeCourante /> {site.nom}. Tous droits réservés. ·{" "}
+          <Link href="/politique-de-confidentialite" className={linkClass}>
+            Politique de confidentialité
+          </Link>
         </p>
       </div>
     </footer>

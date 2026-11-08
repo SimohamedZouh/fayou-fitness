@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { getCategories, getMachines } from "@/data/catalogue";
 import { absoluteUrl } from "@/lib/seo";
 
-const pages = ["/", "/machines", "/services", "/projets", "/a-propos", "/contact"];
+const pages = ["/", "/machines", "/services", "/projets", "/a-propos", "/contact", "/politique-de-confidentialite"];
 
 /** Toutes les pages : 6 pages, les catégories et les fiches machines. */
 export default function sitemap(): MetadataRoute.Sitemap {

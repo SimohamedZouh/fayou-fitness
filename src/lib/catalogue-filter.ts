@@ -11,11 +11,21 @@ export const ETAT_LABELS: Record<Etat, string> = {
   occasion: "Occasion",
 };
 
+/** Libellé affiché pour une machine : « Occasion révisée » quand une marque est renseignée (catalogue V5). */
+export const etatLibelle = (m: Pick<Machine, "etat" | "marque">, e: Etat) =>
+  e === "occasion" && m.marque && !m.etat.includes("neuf") ? "Occasion révisée" : ETAT_LABELS[e];
+
 export const TRIS = [
   { value: "nom", label: "Nom (A à Z)" },
   { value: "nom-desc", label: "Nom (Z à A)" },
   { value: "categorie", label: "Catégorie" },
 ] as const;
+
+/** Marques filtrables (machines réelles du catalogue V5). */
+export const MARQUES = ["Matrix", "Keiser", "Technogym"] as const;
+
+/** Marque « de famille » : « Matrix (Powered by ICG) » compte comme Matrix. */
+export const marqueFiltre = (m: Machine) => (m.marque ?? "").split(" (")[0];
 
 export type Tri = (typeof TRIS)[number]["value"];
 
@@ -24,6 +34,7 @@ export interface FiltresCatalogue {
   cat: string;
   etat: "" | Etat;
   usage: "" | Usage;
+  marque: string;
   tri: Tri;
 }
 
@@ -32,16 +43,22 @@ type RawParams = Record<string, string | string[] | undefined>;
 const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
 /** Lit et valide les paramètres d'URL (valeurs inconnues ignorées). */
-export function parseFiltres(params: RawParams, categoriesSlugs: string[]): FiltresCatalogue {
+export function parseFiltres(
+  params: RawParams,
+  categoriesSlugs: string[],
+  marques: readonly string[] = MARQUES,
+): FiltresCatalogue {
   const etat = first(params.etat);
   const usage = first(params.usage);
   const cat = first(params.cat);
   const tri = first(params.tri);
+  const marque = first(params.marque);
   return {
     q: first(params.q).slice(0, 80),
     cat: categoriesSlugs.includes(cat) ? cat : "",
     etat: etat === "neuf" || etat === "occasion" ? etat : "",
     usage: usage === "home" || usage === "hotel" || usage === "pro" ? usage : "",
+    marque: marques.includes(marque) ? marque : "",
     tri: TRIS.some((t) => t.value === tri) ? (tri as Tri) : "nom",
   };
 }
@@ -54,7 +71,7 @@ const debutsDeMots = (texte: string) => texte.split(/[^a-z0-9]+/).filter(Boolean
 
 const texteMachine = (m: Machine) =>
   normaliser(
-    [m.nom, m.description, m.benefice, m.sousCategorie, ...(m.muscles ?? []), ...(m.variantes ?? [])].join(" "),
+    [m.nom, m.marque ?? "", m.modele ?? "", m.description, m.benefice, m.sousCategorie, ...(m.muscles ?? []), ...(m.variantes ?? [])].join(" "),
   );
 
 export function filtrerMachines(
@@ -68,6 +85,7 @@ export function filtrerMachines(
     if (f.cat && m.categorie !== f.cat) return false;
     if (f.etat && !m.etat.includes(f.etat)) return false;
     if (f.usage && !m.usages.includes(f.usage)) return false;
+    if (f.marque && marqueFiltre(m) !== f.marque) return false;
     if (q && !motsRecherche.every((mot) => debutsDeMots(texteMachine(m)).some((w) => w.startsWith(mot))))
       return false;
     return true;

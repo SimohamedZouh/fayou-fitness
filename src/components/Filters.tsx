@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
-import { ETAT_LABELS, TRIS, USAGE_LABELS } from "@/lib/catalogue-filter";
+import { ETAT_LABELS, MARQUES, TRIS, USAGE_LABELS } from "@/lib/catalogue-filter";
 
 interface Props {
   categories: { slug: string; nom: string }[];
@@ -50,7 +50,7 @@ export default function Filters({ categories, total }: Props) {
     timer.current = setTimeout(() => update("q", value.trim()), 250);
   }
 
-  const actif = ["q", "cat", "etat", "usage", "tri"].some((k) => params.get(k));
+  const actif = ["q", "cat", "etat", "usage", "marque", "tri"].some((k) => params.get(k));
 
   return (
     <form
@@ -82,7 +82,7 @@ export default function Filters({ categories, total }: Props) {
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div>
           <label htmlFor="f-cat" className="mb-1 block text-xs font-bold uppercase tracking-wide text-text-muted">
             Catégorie
@@ -118,6 +118,19 @@ export default function Filters({ categories, total }: Props) {
             {Object.entries(USAGE_LABELS).map(([v, l]) => (
               <option key={v} value={v}>
                 {l}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label htmlFor="f-marque" className="mb-1 block text-xs font-bold uppercase tracking-wide text-text-muted">
+            Marque
+          </label>
+          <select id="f-marque" className={fieldClass} value={params.get("marque") ?? ""} onChange={(e) => update("marque", e.target.value)}>
+            <option value="">Toutes</option>
+            {MARQUES.map((m) => (
+              <option key={m} value={m}>
+                {m}
               </option>
             ))}
           </select>

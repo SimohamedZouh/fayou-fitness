@@ -16,10 +16,10 @@ import {
 describe("sitemap / robots / manifest", () => {
   const urls = sitemap().map((e) => e.url);
 
-  it("contient les 6 pages, les 6 catégories et toutes les fiches (74)", () => {
-    expect(getMachines()).toHaveLength(74);
+  it("contient les 6 pages, les 6 catégories et toutes les fiches (83)", () => {
+    expect(getMachines()).toHaveLength(83);
     expect(getCategories()).toHaveLength(6);
-    expect(urls.filter((u) => /\/machines\/[^/]+\/[^/]+$/.test(u))).toHaveLength(74);
+    expect(urls.filter((u) => /\/machines\/[^/]+\/[^/]+$/.test(u))).toHaveLength(83);
     expect(urls.filter((u) => /\/machines\/[^/]+$/.test(u))).toHaveLength(6);
     for (const p of ["/services", "/projets", "/a-propos", "/contact", "/machines"]) {
       expect(urls.some((u) => u.endsWith(p))).toBe(true);
@@ -41,12 +41,30 @@ describe("sitemap / robots / manifest", () => {
 });
 
 describe("JSON-LD", () => {
-  it("Product : ni prix, ni offre, ni marque, pour chaque fiche", () => {
-    for (const m of getMachines()) {
+  it("Product : fiches « Sur devis » sans prix, offre ni marque", () => {
+    for (const m of getMachines().filter((x) => x.prix === "Sur devis")) {
       const cat = getCategories().find((c) => c.slug === m.categorie)!;
       const json = JSON.stringify(productJsonLd(m, cat)).toLowerCase();
       expect(json).toContain('"@type":"product"');
-      for (const interdit of ["offers", "price", "brand"]) expect(json).not.toContain(interdit);
+      for (const interdit of ["offers", "price", "brand", "itemcondition"]) expect(json).not.toContain(interdit);
+    }
+  });
+
+  it("Product : machines du catalogue V5 avec marque, modèle, état et offre en MAD", () => {
+    const stock = getMachines().filter((x) => typeof x.prix === "number");
+    expect(stock).toHaveLength(9);
+    for (const m of stock) {
+      const cat = getCategories().find((c) => c.slug === m.categorie)!;
+      const ld = productJsonLd(m, cat) as { brand: { name: string }; model: string; itemCondition: string; offers: object };
+      expect(ld.brand.name).toBe(m.marque);
+      expect(ld.model).toBe(m.modele);
+      expect(ld.itemCondition).toBe("https://schema.org/RefurbishedCondition");
+      expect(ld.offers).toMatchObject({
+        price: m.prix,
+        priceCurrency: "MAD",
+        availability: "https://schema.org/InStock",
+      });
+      expect("image" in (ld as object)).toBe(Boolean(m.images?.length));
     }
   });
 

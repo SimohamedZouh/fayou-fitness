@@ -14,6 +14,7 @@ describe("parseFiltres", () => {
       cat: "",
       etat: "",
       usage: "",
+      marque: "",
       tri: "nom",
     });
   });
@@ -32,9 +33,34 @@ describe("parseFiltres", () => {
   });
 });
 
+describe("filtre Marque", () => {
+  it("parseFiltres garde une marque connue et ignore les autres", () => {
+    expect(parseFiltres({ marque: "Keiser" }, slugs).marque).toBe("Keiser");
+    expect(parseFiltres({ marque: "Inconnue" }, slugs).marque).toBe("");
+  });
+
+  it("filtre par marque (Matrix inclut « Matrix (Powered by ICG) »)", () => {
+    expect(filtrer({ marque: "Matrix" }).map((m) => m.slug).sort()).toEqual([
+      "matrix-a5x-ascent-trainer",
+      "matrix-a7xi-ascent-trainer",
+      "matrix-ic7",
+      "matrix-mxr16",
+      "matrix-r5x",
+      "matrix-t5x",
+      "matrix-t7xe",
+    ]);
+    expect(filtrer({ marque: "Keiser" }).map((m) => m.slug)).toEqual(["keiser-m3"]);
+    expect(filtrer({ marque: "Technogym" }).map((m) => m.slug)).toEqual(["technogym-group-cycle"]);
+  });
+
+  it("la recherche porte aussi sur la marque", () => {
+    expect(filtrer({ q: "keiser" }).map((m) => m.slug)).toContain("keiser-m3");
+  });
+});
+
 describe("filtrerMachines", () => {
-  it("sans filtre : les 74 machines", () => {
-    expect(filtrer({})).toHaveLength(74);
+  it("sans filtre : les 83 machines", () => {
+    expect(filtrer({})).toHaveLength(83);
   });
 
   it("filtre par catégorie", () => {

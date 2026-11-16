@@ -7,16 +7,21 @@ import JsonLd from "@/components/JsonLd";
 import ButtonLink from "@/components/ButtonLink";
 import ProductGrid from "@/components/ProductGrid";
 import { EtatBadges, ProductVisual } from "@/components/ProductCard";
+import ProductGallery from "@/components/ProductGallery";
 import { SectionTitle } from "@/components/Section";
 import { getCategorieBySlug, getMachine, getMachineParams, getMachinesSimilaires } from "@/data/catalogue";
 import { devisHref } from "@/data/navigation";
 import { site } from "@/data/site";
-import { USAGE_LABELS } from "@/lib/catalogue-filter";
+import { etatLibelle, USAGE_LABELS } from "@/lib/catalogue-filter";
+import { formatPrix } from "@/lib/prix";
 import { breadcrumbJsonLd, pageMetadata, productJsonLd } from "@/lib/seo";
 import { whatsappLink } from "@/lib/whatsapp";
 
 /** Slug inconnu : HTTP 404 dès la première requête (pas de soft 404). */
 export const ensureStatic = "navigation";
+
+/** « Matrix T5x (console LED) » devient « Matrix T5x ». */
+const nomCourt = (nom: string) => nom.replace(/\s*\([^)]*\)\s*$/, "");
 
 export function generateStaticParams() {
   return getMachineParams();
@@ -28,6 +33,18 @@ export async function generateMetadata({
   const { categorie, slug } = await params;
   const machine = getMachine(categorie, slug);
   if (!machine) return { title: "Machine introuvable" };
+  if (typeof machine.prix === "number") {
+    // Machine du catalogue V5 : titre avec état et prix, description avec 2 à 3 specs clés.
+    const specsCles = Object.entries(machine.specs ?? {})
+      .slice(0, 3)
+      .map(([k, v]) => `${k} : ${v.replace(/\s*\([^)]*\)/g, "")}`)
+      .join(" · ");
+    return pageMetadata({
+      title: `${nomCourt(machine.nom)} d'occasion révisée – ${formatPrix(machine.prix)}`,
+      description: `${specsCles}. Garantie ${machine.garantie ?? "12 mois"}, livraison gratuite à Casablanca. FAYOU Fitness.`,
+      path: `/machines/${machine.categorie}/${machine.slug}`,
+    });
+  }
   return pageMetadata({
     title: `${machine.nom} : neuf et occasion`,
     description: `${machine.description} Sur devis, installation et maintenance par FAYOU Fitness.`,
@@ -49,10 +66,20 @@ export default async function MachinePage({ params }: PageProps<"/machines/[cate
   ];
   const similaires = getMachinesSimilaires(machine, 4);
   const specs = machine.specs ? Object.entries(machine.specs) : [];
+  const enStock = typeof machine.prix === "number";
+  const detail = [machine.marque, machine.modele].filter(Boolean).join(" ");
   const wa = whatsappLink(
     site.whatsapp,
-    `Bonjour FAYOU Fitness, je souhaite un devis pour : ${machine.nom}.`,
+    `Bonjour FAYOU Fitness, je souhaite un devis pour : ${machine.nom}${
+      detail ? ` (${detail})` : ""
+    }${enStock ? `, prix affiché : ${formatPrix(machine.prix)}` : ""}.`,
   );
+  const identite: [string, string][] = [
+    ...(machine.marque ? ([["Marque", machine.marque]] as [string, string][]) : []),
+    ...(machine.modele ? ([["Modèle", machine.modele]] as [string, string][]) : []),
+    ...(enStock ? ([["État", machine.etat.map((e) => etatLibelle(machine, e)).join(" · ")]] as [string, string][]) : []),
+    ...(machine.garantie ? ([["Garantie", machine.garantie]] as [string, string][]) : []),
+  ];
 
   return (
     <>
@@ -64,7 +91,13 @@ export default async function MachinePage({ params }: PageProps<"/machines/[cate
       </div>
 
       <article className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-2">
-        <ProductVisual machine={machine} className="aspect-[4/3] rounded-2xl border border-border" />
+        <ProductGallery
+          nom={machine.nom}
+          images={machine.images}
+          fallback={
+            <ProductVisual machine={machine} className="aspect-[4/3] rounded-2xl border border-border" />
+          }
+        />
 
         <div className="space-y-6">
           <div className="space-y-3">
@@ -75,7 +108,7 @@ export default async function MachinePage({ params }: PageProps<"/machines/[cate
               {machine.nom}
             </SectionTitle>
             <div className="flex flex-wrap gap-2">
-              <EtatBadges etat={machine.etat} />
+              <EtatBadges machine={machine} />
               {machine.usages.map((u) => (
                 <span key={u} className="rounded-full bg-primary px-2.5 py-0.5 text-xs font-semibold text-white">
                   {USAGE_LABELS[u]}
@@ -116,25 +149,24 @@ export default async function MachinePage({ params }: PageProps<"/machines/[cate
             </div>
           )}
 
-          {specs.length > 0 && (
-            <div>
-              <h2 className="mb-2 font-bold">Caractéristiques</h2>
-              <dl className="divide-y divide-border rounded-xl border border-border text-sm">
-                {specs.map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-4 px-4 py-2">
-                    <dt className="text-text-muted">{k}</dt>
-                    <dd className="font-semibold">{v}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
+          {identite.length > 0 && (
+            <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border text-sm">
+              {identite.map(([k, v]) => (
+                <div key={k} className="bg-card px-4 py-2">
+                  <dt className="text-text-muted">{k}</dt>
+                  <dd className="font-semibold">{v}</dd>
+                </div>
+              ))}
+            </dl>
           )}
 
           <div className="rounded-2xl border border-border bg-card p-5">
             <p className="text-sm text-text-muted">Prix</p>
-            <p className="font-display text-3xl font-extrabold uppercase italic">{machine.prix}</p>
+            <p className="font-display text-3xl font-extrabold uppercase italic">{formatPrix(machine.prix)}</p>
             <p className="mt-1 text-sm text-text-muted">
-              Devis gratuit et sans engagement, installation et maintenance possibles.
+              {enStock
+                ? `Livraison gratuite à Casablanca · garantie ${machine.garantie ?? "12 mois"} · installation possible. Autres villes sur demande.`
+                : "Devis gratuit et sans engagement, installation et maintenance possibles."}
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <AddToQuoteButton slug={machine.slug} categorie={machine.categorie} nom={machine.nom} />
@@ -148,6 +180,24 @@ export default async function MachinePage({ params }: PageProps<"/machines/[cate
           </div>
         </div>
       </article>
+
+      {specs.length > 0 && (
+        <section aria-labelledby="fiche-technique" className="mx-auto w-full max-w-7xl px-4 pb-12 sm:px-6">
+          <h2 id="fiche-technique" className="mb-4 font-display text-3xl font-extrabold uppercase italic">
+            Fiche technique
+          </h2>
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
+            <dl className="-mb-px grid text-sm md:grid-cols-2">
+              {specs.map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4 border-b border-border px-4 py-3 md:odd:border-r">
+                  <dt className="text-text-muted">{k}</dt>
+                  <dd className="text-right font-semibold">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+      )}
 
       {similaires.length > 0 && (
         <section className="bg-bg-alt py-14">

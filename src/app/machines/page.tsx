@@ -8,7 +8,7 @@ import CategoryCard from "@/components/CategoryCard";
 import CtaBanner from "@/components/CtaBanner";
 import ButtonLink from "@/components/ButtonLink";
 import Icon from "@/components/Icon";
-import { getCategories, getMachines, getMachinesByCategorie } from "@/data/catalogue";
+import { getCategories, getMachines, getMachinesByCategorie, getMachinesEnStock } from "@/data/catalogue";
 import { filtrerMachines, parseFiltres } from "@/lib/catalogue-filter";
 import { pageMetadata } from "@/lib/seo";
 
@@ -29,9 +29,11 @@ async function Resultats({ searchParams }: { searchParams: PageProps<"/machines"
 
   // Regroupement par catégorie (onglets + ancres) tant qu’aucun filtre ni tri inversé n’est actif.
   const groupe =
-    !filtres.q && !filtres.cat && !filtres.etat && !filtres.usage && filtres.tri !== "nom-desc";
+    !filtres.q && !filtres.cat && !filtres.etat && !filtres.usage && !filtres.marque && filtres.tri !== "nom-desc";
+  const stockIds = new Set(getMachinesEnStock().map((m) => m.slug));
+  const enStock = groupe ? machines.filter((m) => stockIds.has(m.slug)) : [];
   const groupes = categories
-    .map((c) => ({ categorie: c, liste: machines.filter((m) => m.categorie === c.slug) }))
+    .map((c) => ({ categorie: c, liste: machines.filter((m) => m.categorie === c.slug && !(groupe && stockIds.has(m.slug))) }))
     .filter((g) => g.liste.length > 0);
 
   return (
@@ -45,6 +47,17 @@ async function Resultats({ searchParams }: { searchParams: PageProps<"/machines"
               className="sticky top-16 z-10 -mx-4 mb-8 border-b border-border bg-bg/90 px-4 backdrop-blur sm:-mx-6 sm:px-6"
             >
               <ul className="flex gap-2 overflow-x-auto py-3">
+                {enStock.length > 0 && (
+                  <li className="shrink-0">
+                    <a
+                      href="#en-stock"
+                      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-primary bg-card px-4 text-sm font-semibold text-primary-text"
+                    >
+                      En stock
+                      <span className="text-text-muted">({enStock.length})</span>
+                    </a>
+                  </li>
+                )}
                 {groupes.map(({ categorie: c, liste }) => (
                   <li key={c.slug} className="shrink-0">
                     <a
@@ -60,6 +73,20 @@ async function Resultats({ searchParams }: { searchParams: PageProps<"/machines"
               </ul>
             </nav>
             <div className="space-y-14">
+              {enStock.length > 0 && (
+                <section id="en-stock" aria-labelledby="titre-en-stock" className="scroll-mt-40">
+                  <h2
+                    id="titre-en-stock"
+                    className="mb-2 font-display text-3xl font-extrabold uppercase italic"
+                  >
+                    En stock
+                  </h2>
+                  <p className="mb-6 text-text-muted">
+                    Machines d&apos;occasion révisées, garanties 12 mois, prix affichés en DH.
+                  </p>
+                  <ProductGrid machines={enStock} />
+                </section>
+              )}
               {groupes.map(({ categorie: c, liste }) => (
                 <section
                   key={c.slug}
@@ -105,7 +132,7 @@ export default function MachinesPage({ searchParams }: PageProps<"/machines">) {
     <>
       <PageHeader
         titre="Machines"
-        intro="Neuf ou occasion, pour votre maison, votre hôtel ou votre salle professionnelle. Toutes les machines sont proposées sur devis."
+        intro="Neuf ou occasion, pour votre maison, votre hôtel ou votre salle professionnelle. Machines en stock au prix affiché, autres références sur devis."
       >
         <Breadcrumb items={[{ label: "Accueil", href: "/" }, { label: "Machines" }]} />
       </PageHeader>

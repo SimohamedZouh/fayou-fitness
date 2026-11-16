@@ -12,6 +12,7 @@ import {
   getCategorieParams,
   getCategories,
   getMachinesByCategorie,
+  getMachinesEnStock,
   getMachinesBySousCategorie,
 } from "@/data/catalogue";
 import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
@@ -45,11 +46,13 @@ export default async function CategoriePage({ params }: PageProps<"/machines/[ca
     { label: "Machines", href: "/machines" },
     { label: cat.nom, href: `/machines/${cat.slug}` },
   ];
+  const enStock = getMachinesEnStock(cat.slug);
+  const enStockSlugs = new Set(enStock.map((m) => m.slug));
   const autres = getCategories().filter((c) => c.slug !== cat.slug);
 
   return (
     <>
-      <PageHeader titre={cat.nom} intro={`${cat.description} ${total} machines, toutes sur devis.`}>
+      <PageHeader titre={cat.nom} intro={`${cat.description} ${total} machines${enStock.length ? `, dont ${enStock.length} en stock au prix affiché` : ""}, les autres sur devis.`}>
         <Breadcrumb items={[...fil.slice(0, 2), { label: cat.nom }]} />
         <JsonLd data={breadcrumbJsonLd(fil)} />
       </PageHeader>
@@ -57,6 +60,16 @@ export default async function CategoriePage({ params }: PageProps<"/machines/[ca
       <div className="sticky top-16 z-10 border-b border-border bg-bg/90 backdrop-blur">
         <nav aria-label={`Familles de ${cat.nom}`} className="mx-auto max-w-7xl overflow-x-auto px-4 sm:px-6">
           <ul className="flex gap-2 py-3">
+            {enStock.length > 0 && (
+              <li className="shrink-0">
+                <Link
+                  href="#en-stock"
+                  className="inline-flex items-center gap-2 rounded-full border border-primary bg-card px-4 py-2 text-sm font-semibold text-primary-text"
+                >
+                  En stock
+                </Link>
+              </li>
+            )}
             {cat.sousCategories.map((s) => (
               <li key={s.slug} className="shrink-0">
                 <Link
@@ -73,8 +86,19 @@ export default async function CategoriePage({ params }: PageProps<"/machines/[ca
       </div>
 
       <div className="mx-auto w-full max-w-7xl space-y-14 px-4 py-12 sm:px-6">
+        {enStock.length > 0 && (
+          <section id="en-stock" aria-labelledby="titre-en-stock" className="scroll-mt-40">
+            <h2 id="titre-en-stock" className="mb-2 font-display text-3xl font-extrabold uppercase italic">
+              En stock
+            </h2>
+            <p className="mb-6 text-text-muted">
+              Machines d&apos;occasion révisées, garanties 12 mois, prix affichés en DH.
+            </p>
+            <ProductGrid machines={enStock} />
+          </section>
+        )}
         {cat.sousCategories.map((s) => {
-          const liste = getMachinesBySousCategorie(cat.slug, s.slug);
+          const liste = getMachinesBySousCategorie(cat.slug, s.slug).filter((m) => !enStockSlugs.has(m.slug));
           if (liste.length === 0) return null;
           return (
             <section key={s.slug} id={s.slug} className="scroll-mt-40">

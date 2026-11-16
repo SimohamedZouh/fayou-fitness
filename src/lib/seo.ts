@@ -76,15 +76,36 @@ export function localBusinessJsonLd() {
   };
 }
 
-/** Product sans prix, sans offre et sans marque (aucune donnée fournie par FAYOU). */
+/**
+ * Product : marque, modèle, image, état et offre uniquement quand les données existent
+ * (machines du catalogue V5 ; les fiches « Sur devis » restent sans prix ni offre).
+ */
 export function productJsonLd(machine: Machine, categorie: Categorie) {
+  const url = absoluteUrl(`/machines/${machine.categorie}/${machine.slug}`);
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     name: machine.nom,
     description: machine.description,
     category: categorie.nom,
-    url: absoluteUrl(`/machines/${machine.categorie}/${machine.slug}`),
+    url,
+    ...(machine.marque ? { brand: { "@type": "Brand", name: machine.marque } } : {}),
+    ...(machine.modele ? { model: machine.modele } : {}),
+    ...(machine.images?.length ? { image: machine.images.map((i) => absoluteUrl(i)) } : {}),
+    ...(machine.marque && machine.etat.length === 1 && machine.etat[0] === "occasion"
+      ? { itemCondition: "https://schema.org/RefurbishedCondition" }
+      : {}),
+    ...(typeof machine.prix === "number"
+      ? {
+          offers: {
+            "@type": "Offer",
+            url,
+            price: machine.prix,
+            priceCurrency: "MAD",
+            availability: "https://schema.org/InStock",
+          },
+        }
+      : {}),
   };
 }
 

@@ -141,6 +141,186 @@ const cardio = construire("cardio", [
   { slug: "ski-erg", nom: "Ski erg", famille: "rameurs-ski", icone: "Snowflake", description: "Mouvement de tirage de ski pour un travail cardio du haut du corps.", benefice: "Cardio haut du corps et gainage", usages: TOUS, muscles: ["Dos", "Épaules", "Abdominaux"] },
 ]);
 
+/* ------------------------------------------------------------------ */
+/* Machines en stock (catalogue V5) : prix, état et garantie fournis   */
+/* par FAYOU ; caractéristiques issues du catalogue V5 et des fiches   */
+/* constructeur. Photos : à déposer dans public/machines/<slug>/ puis  */
+/* à lister dans `images` (galerie vide = visuel provisoire).          */
+/* ------------------------------------------------------------------ */
+
+type LigneStock = Ligne & {
+  famille: "course-marche" | "velos" | "rameurs-ski";
+  marque: string;
+  modele: string;
+  prix: number;
+  specs: Record<string, string>;
+};
+
+function construireStock(lignes: LigneStock[]): Machine[] {
+  const base = construire("cardio", lignes);
+  return base.map((m, i) => ({
+    ...m,
+    etat: ["occasion"] as Machine["etat"],
+    marque: lignes[i].marque,
+    modele: lignes[i].modele,
+    garantie: "12 mois",
+    images: [],
+    specs: lignes[i].specs,
+    prix: lignes[i].prix,
+  }));
+}
+
+const stock = construireStock([
+  {
+    slug: "matrix-t5x", nom: "Matrix T5x (console LED)", famille: "course-marche", icone: "Activity",
+    description: "Tapis de course commercial Matrix à moteur AC 5,0 CV, large surface de course et console LED avec ventilateur intégré.",
+    benefice: "Moteur AC 5,0 CV et surface de course de 152 × 56 cm", usages: TOUS,
+    marque: "Matrix", modele: "T5x, console LED", prix: 17000,
+    specs: {
+      "Moteur": "5,0 CV AC (Dynamic Response Drive System)",
+      "Vitesse": "0,8 à 24 km/h",
+      "Inclinaison": "0 à 15 %",
+      "Surface de course": "152 × 56 cm",
+      "Amorti": "Ultimate Deck",
+      "Hauteur de marche": "24 cm",
+      "Console": "LED dot-matrix, ventilateur intégré",
+      "Cardiofréquencemètre": "Capteurs de contact et réception télémétrique",
+      "Dimensions (L × l × H)": "215 × 93 × 161 cm",
+      "Poids max utilisateur": "182 kg",
+      "Alimentation": "Circuit électrique dédié",
+    },
+  },
+  {
+    slug: "matrix-t7xe", nom: "Matrix T7xe (console connectée)", famille: "course-marche", icone: "Activity",
+    description: "Tapis de course commercial haut de gamme avec écran tactile 15 pouces et la même base mécanique que le T5x.",
+    benefice: "Écran tactile LCD 15\" et moteur AC 5,0 CV", usages: TOUS,
+    marque: "Matrix", modele: "T7xe, console tactile", prix: 23000,
+    specs: {
+      "Moteur": "5,0 CV AC (Dynamic Response Drive System)",
+      "Vitesse": "0,8 à 24 km/h",
+      "Inclinaison": "0 à 15 %",
+      "Surface de course": "152 × 56 cm",
+      "Amorti": "Ultimate Deck",
+      "Hauteur de marche": "24 cm",
+      "Console": "Écran tactile LCD 15\"",
+      "Cardiofréquencemètre": "Contact et télémétrique",
+      "Poids de la machine": "168 kg",
+      "Poids max utilisateur": "182 kg",
+      "Alimentation": "Circuit électrique dédié",
+    },
+  },
+  {
+    slug: "matrix-a7xi-ascent-trainer", nom: "Matrix A7xi Ascent Trainer (connecté)", famille: "velos", icone: "Orbit",
+    description: "Ascent Trainer (elliptique à inclinaison variable) à faible impact, avec console tactile 16 pouces connectée en Wi-Fi.",
+    benefice: "Cardio complet à faible impact", usages: TOUS, muscles: ["Jambes", "Fessiers", "Haut du corps"],
+    marque: "Matrix", modele: "A7xi Ascent Trainer", prix: 16000,
+    specs: {
+      "Foulée": "Réglable de 51 à 61 cm",
+      "Inclinaison et résistance": "Réglables",
+      "Console": "Tactile 16\" Wi-Fi",
+      "Ventilateur": "Intégré, 3 vitesses",
+      "Hauteur de marche": "24 cm",
+      "Cardiofréquencemètre": "Contact et télémétrique",
+      "Dimensions (L × l × H)": "178 × 74 × 174 cm",
+      "Poids max utilisateur": "182 kg",
+    },
+  },
+  {
+    slug: "matrix-a5x-ascent-trainer", nom: "Matrix A5x Ascent Trainer (2 en 1)", famille: "velos", icone: "Orbit",
+    description: "Ascent Trainer 2 en 1, mouvement elliptique et montée d'escalier, pour un travail du corps complet ; testé avant livraison.",
+    benefice: "Elliptique et escalier en une seule machine", usages: TOUS,
+    marque: "Matrix", modele: "A5x Ascent Trainer", prix: 16000,
+    specs: {
+      "Mouvement": "Elliptique + escalier (2 en 1)",
+      "Foulée": "53 à 61 cm",
+      "Résistance": "Générateur sans balais, 25 niveaux",
+      "Console": "LED",
+      "Dimensions (L × l × H)": "203 × 88 × 183 cm",
+      "Poids de la machine": "201 kg",
+      "Poids max utilisateur": "182 kg",
+    },
+  },
+  {
+    slug: "matrix-ic7", nom: "Matrix IC7 (Powered by ICG)", famille: "velos", icone: "Bike",
+    description: "Vélo de cycling indoor haut de gamme, résistance magnétique au cadran 300° et mesure de puissance WattRate.",
+    benefice: "Résistance magnétique et mesure de puissance WattRate", usages: TOUS,
+    marque: "Matrix (Powered by ICG)", modele: "IC7", prix: 7000,
+    specs: {
+      "Résistance": "Magnétique, cadran 300°",
+      "Transmission": "2 étages, courroie Poly-V + courroie crantée, silencieuse et sans entretien",
+      "Volant": "Arrière, aluminium",
+      "Console": "WattRate TFT autoalimentée, guide d'intensité Coach By Color",
+      "Connectivité": "Bluetooth, ANT+",
+      "Q-factor": "155 mm",
+      "Pédales": "SPD double face + cale-pieds",
+      "Dimensions (L × l × H)": "132 × 52 × 102 cm",
+      "Poids de la machine": "54 kg",
+      "Poids max utilisateur": "150 kg",
+      "Taille utilisateur": "155 à 215 cm",
+    },
+  },
+  {
+    slug: "keiser-m3", nom: "Keiser M3", famille: "velos", icone: "Bike",
+    description: "Vélo de spinning Keiser fabriqué aux États-Unis, résistance magnétique sans usure et volant arrière.",
+    benefice: "Résistance magnétique sans contact ni usure", usages: TOUS,
+    marque: "Keiser", modele: "M3 Indoor Cycle", prix: 6000,
+    specs: {
+      "Résistance": "Magnétique (sans contact, sans usure)",
+      "Volant": "Arrière",
+      "Transmission": "Courroie Poly-V",
+      "Console": "Écran M Series, sur piles",
+      "Dimensions (L × l × H)": "124,5 × 66 × 114,3 cm",
+      "Poids de la machine": "38,6 kg",
+      "Poids max utilisateur": "159 kg",
+      "Taille utilisateur": "147 à 213 cm",
+      "Fabrication": "États-Unis",
+    },
+  },
+  {
+    slug: "technogym-group-cycle", nom: "Technogym Group Cycle", famille: "velos", icone: "Bike",
+    description: "Vélo de cycling indoor Technogym au design italien, résistance magnétique et transmission par courroie Poly-V.",
+    benefice: "Résistance magnétique à 20 niveaux", usages: TOUS,
+    marque: "Technogym", modele: "Group Cycle", prix: 7000,
+    specs: {
+      "Résistance": "Magnétique (aimants néodyme), 20 niveaux",
+      "Transmission": "Courroie Poly-V 6 nervures à fibres Kevlar",
+      "Frein d'urgence": "Par pression",
+      "Dimensions (L × l × H)": "114 × 59 × 114 cm",
+      "Poids de la machine": "67 kg",
+      "Poids max utilisateur": "160 kg",
+      "Taille utilisateur": "140 à 210 cm",
+    },
+  },
+  {
+    slug: "matrix-r5x", nom: "Matrix R5x (vélo couché)", famille: "velos", icone: "Armchair",
+    description: "Vélo semi-allongé confortable, dossier ergonomique et console LED avec ventilateur.",
+    benefice: "Confort et soutien du dos", usages: TOUS,
+    marque: "Matrix", modele: "R5x", prix: 9000,
+    specs: {
+      "Résistance": "Générateur sans balais, 30 niveaux",
+      "Console": "LED dot-matrix avec profil, ventilateur intégré",
+      "Cardiofréquencemètre": "Capteurs de contact",
+      "Dimensions (L × l × H)": "157,5 × 63,5 × 128,5 cm",
+      "Poids max utilisateur": "182 kg",
+    },
+  },
+  {
+    slug: "matrix-mxr16", nom: "Rameur Matrix MXR16", famille: "rameurs-ski", icone: "AudioWaveform",
+    description: "Rameur commercial Matrix, résistance magnétique silencieuse et monorail en aluminium, se range à la verticale.",
+    benefice: "Résistance magnétique silencieuse, rangement vertical", usages: TOUS, muscles: ["Dos", "Jambes", "Bras"],
+    marque: "Matrix", modele: "MXR16", prix: 11000,
+    specs: {
+      "Résistance": "Magnétique (induction), 10 niveaux",
+      "Transmission": "Courroie Poly-V",
+      "Rail": "Monorail aluminium",
+      "Console": "LCD rétroéclairée, autoalimentée, 10 programmes",
+      "Rangement": "Vertical, roulettes de transport",
+      "Dimensions (L × l × H)": "223 × 55 × 108 cm",
+      "Poids max utilisateur": "159 kg",
+    },
+  },
+]);
+
 const musculation = construire("musculation-machines-guidees", [
   { slug: "presse-pectorale", nom: "Presse pectorale", famille: "haut-du-corps", icone: "Dumbbell", description: "Poussée guidée pour développer les pectoraux en sécurité.", benefice: "Développement des pectoraux", usages: TOUS, muscles: ["Pectoraux", "Triceps", "Épaules"], variantes: ["Chest press"] },
   { slug: "presse-epaules", nom: "Presse épaules", famille: "haut-du-corps", icone: "ArrowUpFromLine", description: "Poussée verticale guidée pour renforcer les épaules.", benefice: "Épaules plus fortes", usages: TOUS, muscles: ["Épaules", "Triceps"], variantes: ["Shoulder press"] },
@@ -221,6 +401,7 @@ const amenagement = construire("amenagement-accessoires", [
 ]);
 
 export const machines: Machine[] = [
+  ...stock,
   ...cardio,
   ...musculation,
   ...racks,
@@ -256,6 +437,10 @@ export const getMachine = (categorieSlug: string, slug: string): Machine | undef
 
 export const getMachineBySlug = (slug: string): Machine | undefined =>
   machines.find((m) => m.slug === slug);
+
+/** Machines réelles du catalogue V5 (prix en DH). */
+export const getMachinesEnStock = (categorieSlug?: string): Machine[] =>
+  stock.filter((m) => !categorieSlug || m.categorie === categorieSlug);
 
 /** Machines de la même catégorie, hors la machine donnée. */
 export const getMachinesSimilaires = (machine: Machine, limite = 4): Machine[] =>

@@ -44,10 +44,18 @@ export interface Machine {
   variantes?: string[];
   /** Visuel provisoire. */
   image: string;
-  /** Caractéristiques techniques : absentes tant que FAYOU ne les fournit pas. */
+  /** Marque (machines réelles du catalogue V5). */
+  marque?: string;
+  /** Modèle exact. */
+  modele?: string;
+  /** Garantie (ex. « 12 mois »). */
+  garantie?: string;
+  /** Galerie : chemins sous /machines/<slug>/ (fichiers dans public/machines/<slug>/). */
+  images?: string[];
+  /** Fiche technique : l'ordre d'insertion est l'ordre d'affichage. */
   specs?: Record<string, string>;
-  /** Toujours « Sur devis » : aucun prix publié. */
-  prix: "Sur devis";
+  /** « Sur devis » ou prix en DH (catalogue V5). */
+  prix: "Sur devis" | number;
 }
 
 export interface Service {
